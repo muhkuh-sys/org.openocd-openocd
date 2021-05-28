@@ -19,6 +19,16 @@ print('Building for %s' % tPlatform['platform_id'])
 # - Configuration
 # -
 
+
+# Only if you are building on Windows:
+# Select the path of the compiler for Windows 32bit.
+strCfg_CompilerPath_Windows_MinGw_w64_i686 = 'C:/MinGW/i686-8.1.0-release-posix-sjlj-rt_v6-rev0/mingw32/bin'
+
+# Only if you are building on Windows:
+# Select the path of the compiler for Windows 64bit.
+strCfg_CompilerPath_Windows_MinGw_w64_x86_64 = 'C:/MinGW/x86_64-8.1.0-release-posix-seh-rt_v6-rev0/mingw64/bin'
+
+
 # Get the project folder. This is the folder of this script.
 strCfg_projectFolder = os.path.dirname(os.path.realpath(__file__))
 
@@ -169,6 +179,77 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
     else:
         raise Exception('Unknown distribution: "%s"' % tPlatform['distribution_id'])
 
+elif tPlatform['host_distribution_id'] == 'windows':
+    if tPlatform['distribution_id'] == 'windows':
+        # Build on windows for windows.
+        if tPlatform['cpu_architecture'] == 'x86':
+            # Build for 32bit windows.
+            astrCMAKE_COMPILER = [
+                '-DCMAKE_C_FLAGS=-m32',
+                '-DCMAKE_CXX_FLAGS=-m32',
+                '-DCMAKE_SYSTEM_NAME=Windows',
+                '-DCMAKE_AR=%s/ar.exe' % strCfg_CompilerPath_Windows_MinGw_w64_i686,
+                '-DCMAKE_C_COMPILER=%s/i686-w64-mingw32-gcc.exe' % strCfg_CompilerPath_Windows_MinGw_w64_i686,
+                '-DCMAKE_CXX_COMPILER=%s/i686-w64-mingw32-g++.exe' % strCfg_CompilerPath_Windows_MinGw_w64_i686,
+                '-DCMAKE_RC_COMPILER=%s/i686-w64-mingw32-windres.exe' % strCfg_CompilerPath_Windows_MinGw_w64_i686,
+                '-G "MinGW Makefiles"'
+            ]
+            astrCMAKE_PLATFORM = [
+                '-DJONCHKI_PLATFORM_DIST_ID=windows',
+                '-DJONCHKI_PLATFORM_DIST_VERSION=""',
+                '-DJONCHKI_PLATFORM_CPU_ARCH=x86'
+            ]
+            astrJONCHKI_SYSTEM = [
+                '--distribution-id windows',
+                '--empty-distribution-version',
+                '--cpu-architecture x86'
+            ]
+            strMake = '%s/mingw32-make.exe' % strCfg_CompilerPath_Windows_MinGw_w64_i686
+            astrEnv = dict(
+                os.environ,
+                PATH='%s;%s' % (
+                    strCfg_CompilerPath_Windows_MinGw_w64_i686,
+                    os.environ['PATH']
+                )
+            )
+
+        elif tPlatform['cpu_architecture'] == 'x86_64':
+            # Build for 64bit windows.
+            astrCMAKE_COMPILER = [
+                '-DCMAKE_C_FLAGS=-m64',
+                '-DCMAKE_CXX_FLAGS=-m64',
+                '-DCMAKE_SYSTEM_NAME=Windows',
+                '-DCMAKE_AR=%s/ar.exe' % strCfg_CompilerPath_Windows_MinGw_w64_x86_64,
+                '-DCMAKE_C_COMPILER=%s/x86_64-w64-mingw32-gcc.exe' % strCfg_CompilerPath_Windows_MinGw_w64_x86_64,
+                '-DCMAKE_CXX_COMPILER=%s/x86_64-w64-mingw32-g++.exe' % strCfg_CompilerPath_Windows_MinGw_w64_x86_64,
+                '-DCMAKE_RC_COMPILER=%s/x86_64-w64-mingw32-windres.exe' % strCfg_CompilerPath_Windows_MinGw_w64_x86_64,
+                '-G "MinGW Makefiles"'
+            ]
+            astrCMAKE_PLATFORM = [
+                '-DJONCHKI_PLATFORM_DIST_ID=windows',
+                '-DJONCHKI_PLATFORM_DIST_VERSION=""',
+                '-DJONCHKI_PLATFORM_CPU_ARCH=x86_64'
+            ]
+            astrJONCHKI_SYSTEM = [
+                '--distribution-id windows',
+                '--empty-distribution-version',
+                '--cpu-architecture x86_64'
+            ]
+            strMake = '%s/mingw32-make.exe' % strCfg_CompilerPath_Windows_MinGw_w64_x86_64
+            astrEnv = dict(
+                os.environ,
+                PATH='%s;%s' % (
+                    strCfg_CompilerPath_Windows_MinGw_w64_x86_64,
+                    os.environ['PATH']
+                )
+            )
+
+        else:
+            raise Exception(
+                'Unknown CPU architecture: "%s"' %
+                tPlatform['cpu_architecture']
+            )
+  
 else:
     raise Exception(
         'Unknown host distribution: "%s"' %
