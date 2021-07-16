@@ -113,6 +113,7 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
 
             # Check for all system dependencies.
             astrDeb = [
+                'dpkg-dev',
                 'pkg-config'
             ]
             install.install_host_debs(astrDeb)
