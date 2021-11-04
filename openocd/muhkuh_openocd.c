@@ -49,6 +49,8 @@ int muhkuh_output_handler(struct command_context *ptContext, const char *pcLine)
 
 			/* Is data in the line? */
 			sizLine = strlen(pcLine);
+			/* sizLine is the size without the terminating zero. */
+
 			if( sizLine>0 )
 			{
 				/* Can the line be printed as it is?
@@ -59,6 +61,8 @@ int muhkuh_output_handler(struct command_context *ptContext, const char *pcLine)
 				if( pcLine[sizLine-1]=='\n' && sizUsed==0 )
 				{
 					/* Just pass the line without the newline to the handler. */
+					/* The function that finally handles the printing, muhkuh_log::vlog,
+					   receives the string including the newline. It does not receive the size argument.*/
 					pfnOutput(ptHandle->pvUser, pcLine, sizLine-1);
 				}
 				else
@@ -69,6 +73,9 @@ int muhkuh_output_handler(struct command_context *ptContext, const char *pcLine)
 					if( sizMax==0 )
 					{
 						/* No -> allocate a new buffer. */
+						/* The buffer is not guaranteed to be initialized, 
+						   but is probably zero-filled by the OS for security reasons.
+						   The terminating zero is not copied. */
 						pcBufferNew = (char*)malloc(sizBufferNew);
 					}
 					else
@@ -77,6 +84,8 @@ int muhkuh_output_handler(struct command_context *ptContext, const char *pcLine)
 						if( sizBufferNew<=sizMax )
 						{
 							/* Yes -> keep the current buffer. */
+							/* This case does not occur, because the buffer is always as large
+							   ass the buffered text. */
 							pcBufferNew = pcBuffer;
 							sizBufferNew = sizMax;
 						}
@@ -97,8 +106,10 @@ int muhkuh_output_handler(struct command_context *ptContext, const char *pcLine)
 						sizUsed += sizLine;
 
 						/* Does the buffer hold a complete line now? */
-						if( pcLine[sizUsed-1]=='\n' )
+						if( pcBuffer[sizUsed-1]=='\n' )
 						{
+							/* replace the \n with a terminating zero. */
+							pcBuffer[sizUsed-1]='\0';
 							pfnOutput(ptHandle->pvUser, pcBuffer, sizUsed-1);
 
 							free(pcBuffer);
