@@ -1,8 +1,6 @@
-cmake_minimum_required(VERSION 3.7)
-
 #----------------------------------------------------------------------------
 #
-# Build libusb and create a CMake component.
+# Build libusb.
 #
 PROJECT("libusb")
 

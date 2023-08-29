@@ -1,7 +1,3 @@
-cmake_minimum_required(VERSION 3.7)
-
-PROJECT("external")
-
 #----------------------------------------------------------------------------
 #
 # Construct the host ID for the configure command.
