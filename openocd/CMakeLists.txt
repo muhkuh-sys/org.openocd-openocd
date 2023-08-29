@@ -9,29 +9,11 @@ INCLUDE(ExternalProject)
 
 #----------------------------------------------------------------------------
 
-SET(LIBUSB_INSTALL_PATH "${CMAKE_BINARY_DIR}/external/libusb/install")
-SET(OPENOCD_LIBRARY "${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd-build/src/.libs/libopenocd.a")
-SET(JIMTCL_LIBRARY "${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd-build/jimtcl/libjim.a")
-
-IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-        SET(LIBOPENOCD_LDFLAGS -lws2_32)
-        SET(LIBUSB_LIBRARIES ${LIBUSB_INSTALL_PATH}/lib/libusb-1.0.a)
-ELSE(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-        SET(LIBOPENOCD_LDFLAGS "")
-        SET(LIBUSB_LIBRARIES ${LIBUSB_INSTALL_PATH}/lib/libusb-1.0.a -ludev -pthread)
-ENDIF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-
 ADD_LIBRARY(LIBRARY_libopenocd SHARED
             muhkuh_openocd.c)
 TARGET_INCLUDE_DIRECTORIES(LIBRARY_libopenocd
-                           PRIVATE ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd/src
-                                   ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd/src/helper
-                                   ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd/src/jtag/drivers
-                                   ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd/src/jtag/drivers/libjaylink
-                                   ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd/jimtcl
-                                   ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd-build
-                                   ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd-build/jimtcl
-                                   ${CMAKE_BINARY_DIR}/external/openocd/openocd/src/TARGET_openocd-build/src)
+                           PRIVATE ${LIBUSB_INCLUDE_DIR}
+                                   ${LIBOPENOCD_INCLUDE_DIRECTORIES})
 
 TARGET_LINK_LIBRARIES(LIBRARY_libopenocd
                       PRIVATE ${OPENOCD_LIBRARY} ${JIMTCL_LIBRARY} ${LIBUSB_LIBRARIES} "${LIBOPENOCD_LDFLAGS}")
@@ -59,33 +41,27 @@ INCLUDE(CPack)
 
 IF(${JONCHKI_PLATFORM_DIST_ID} STREQUAL "windows")
 	# Package a windows build.
-
 	CONFIGURE_FILE(installer/install_windows.lua
 	               ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
 	               @ONLY)
 
-	INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/external/openocd/install/bin/openocd.exe
-	        DESTINATION bin)
 	INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openocd.dll
 	        DESTINATION bin)
-
-	INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
-	        DESTINATION .)
 ELSE(${JONCHKI_PLATFORM_DIST_ID} STREQUAL "windows")
 	# Package a linux build.
-
 	CONFIGURE_FILE(installer/install_linux.lua
 	               ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
 	               @ONLY)
 
-	INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/external/openocd/install/bin/openocd
-	        DESTINATION bin)
 	INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openocd.so
 	        DESTINATION bin)
-
-	INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
-	        DESTINATION .)
 ENDIF(${JONCHKI_PLATFORM_DIST_ID} STREQUAL "windows")
+
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
+        DESTINATION .)
+
+INSTALL(PROGRAMS ${OPENOCD_EXE}
+        DESTINATION bin)
 
 INSTALL(FILES muhkuh_openocd.h DESTINATION include)
 
